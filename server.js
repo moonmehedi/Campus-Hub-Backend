@@ -1,44 +1,35 @@
-require('dotenv').config();
-const express = require('express');
-const { createClient } = require('@supabase/supabase-js');
+const express = require("express");
+const supabase = require("./connection");
+require("dotenv").config();
 
 const app = express();
-const port = process.env.PORT||3000;
-
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// Example route to get data from Supabase
-app.get('/', async (req, res) => {
-  const { data, error } = await supabase
-    .from('users')
-    .select('*');
+// ✅ Test Route: Check Database Connection
+app.get("/test-db", async (req, res) => {
+    try {
+        const { data, error } = await supabase.from("test").select("*").limit(5);
+        if (error) throw error;
 
-  if (error) {
-    return res.status(500).json({ error: error.message });
-  }
+        res.json({ success: true, data });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+app.get("/moon", async (req, res) => {
+    try {
+        const { data, error } = await supabase.from("test").select("*").limit(5);
+        if (error) throw error;
 
-  res.status(200).json(data);
+        res.json({ success: true, data });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
 });
 
-// // Example route to insert data into Supabase
-// app.post('/users', async (req, res) => {
-//   const { name, email } = req.body;
-
-//   const { data, error } = await supabase
-//     .from('users')
-//     .insert([{ name, email }]);
-
-//   if (error) {
-//     return res.status(500).json({ error: error.message });
-//   }
-
-//   res.status(201).json(data);
-// });
-
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+// ✅ Start Server
+app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
 });
