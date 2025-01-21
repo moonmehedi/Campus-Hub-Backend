@@ -1,52 +1,52 @@
 const express = require("express");
 const supabase = require("./connection");
-const cors = require('cors');
+const cors = require("cors");
+const multer = require("multer");
 require("dotenv").config();
+
 const app = express();
-app.use(cors())
 const PORT = process.env.PORT || 3000;
 
+app.use(cors());
 app.use(express.json());
 
-// ✅ Test Route: Check Database Connection
-app.get("/test-db", async (req, res) => {
-    try {
-        const { data, error } = await supabase.from("test").select("*").limit(5);
-        if (error) throw error;
-
-        res.json({ success: true, data });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
+// Multer for handling file uploads (stores files in memory)
+const upload = multer({ storage: multer.memoryStorage() });
 
 // ✅ Route to handle leave application form submission
-app.post("/submit-leave-application", async (req, res) => {
-    const {
-        name,
-        id,
-        level,
-        department,
-        section,
-        courseCode,
-        date,
-        hour,
-        reason,
-        document
-    } = req.body;
+app.post("/submit-leave-application", upload.single("document"), async (req, res) => {
+    try {
+        const { name, id, level, department, section, courseCode, date, class_period, reason } = req.body;
+        const document = req.file ? req.file.buffer : null; // Extract file as binary
 
-    // Log the received data for now (you can add Supabase insertion logic here)
-    console.log("Received Leave Application Data:", req.body);
+        if (!name || !id || !courseCode || !date || !class_period || !reason) {
+            return res.status(400).json({ success: false, message: "Missing required fields" });
+        }
 
-    // Optionally, you can store this in Supabase
-    // const { data, error } = await supabase
-    //   .from('leave_applications')
-    //   .insert([
-    //     { name, id, level, department, section, courseCode, date, hour, reason }
-    //   ]);
+        // Prepare data to insert
+        const newLeaveData = {
+            student_id: parseInt(id),
+            leave_date: date,
+            class_period: parseInt(class_period),
+            course_code: parseInt(courseCode),
+            student_name: name,
+            dept: department,
+            reason,
+            document, // Add document binary data
+        };
 
-    // If everything is successful, return a success message
-    res.status(200).json({ success: true, message: "Leave application submitted" });
+        console.log("Data to insert:", newLeaveData);
+
+        // Insert data into Supabase
+        const { data, error } = await supabase.from("leave").insert([newLeaveData]);
+
+        if (error) throw error;
+
+        res.status(200).json({ success: true, message: "Leave application submitted successfully", data });
+    } catch (error) {
+        console.error("Error submitting leave application:", error.message);
+        res.status(500).json({ success: false, message: "Error submitting leave application", error: error.message });
+    }
 });
 
 // ✅ Start Server
