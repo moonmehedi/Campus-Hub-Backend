@@ -1,12 +1,22 @@
+require("dotenv").config();
+
 const express = require("express");
 const supabase = require("./connection");
 const cors = require('cors');
-require("dotenv").config();
 const app = express();
 app.use(cors())
 const PORT = process.env.PORT || 3000;
 
+
 app.use(express.json());
+
+//⚠️import routes from here
+const noticeRouter=require("./src/routes/notices")
+
+//Dummy Homepage to avoid frustration 😅 ===Arqam
+app.get("/",async(req,res)=>{
+    res.send("Welcome to CampusHub")
+})
 
 // ✅ Test Route: Check Database Connection
 app.get("/test-db", async (req, res) => {
@@ -48,6 +58,10 @@ app.post("/submit-leave-application", async (req, res) => {
     // If everything is successful, return a success message
     res.status(200).json({ success: true, message: "Leave application submitted" });
 });
+
+
+//⬇️Assign routes to app from here
+app.use("/notices",noticeRouter);
 
 // ✅ Start Server
 app.listen(PORT, () => {
