@@ -17,9 +17,10 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 //⚠️import routes from here
 const noticeRouter=require("./src/routes/notices")
+const messageRouter=require("./src/routes/messages")
 //⬇️Assign routes to app from here
 app.use("/notices",noticeRouter);
-
+app.use('/messages',messageRouter);
 //Dummy Homepage to avoid frustration 😅 ===Arqam
 app.get("/",async(req,res)=>{
     res.send("Welcome to CampusHub")
