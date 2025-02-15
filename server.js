@@ -35,6 +35,8 @@ app.use("/courseadvisor",Router1);
 const Router2 = require("./src/routes/leave");
 //⬇️Assign routes to app from here
 app.use("/leave",Router2);
+const examRouter = require("./src/routes/exam");
+app.use("/exams", examRouter);
 
 
 // ## dont move it
