@@ -42,7 +42,7 @@ app.get("/courses-to-exam/:student_id", async (req, res) => {
   const { student_id } = req.params;
   try {
       const { data, error } = await supabase
-          .from("completed_courses")
+          .from("enrolled_courses")
           .select("course_code, grade, course:course_code(name, credit)") // Fetch related course details
           .eq("student_id", student_id)
           .lt("grade", 3.25)
