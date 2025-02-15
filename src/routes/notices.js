@@ -29,7 +29,11 @@ router.post('/', async (req, res) => {
         try {
             const { data,error } = await supabase
                 .from('notices')
-                .insert({ teacher_id, title, content })
+                .insert({ teacher_id:teacher_id,
+                    content:content,
+                    title:title,
+                    type:type,
+                 })
                 .select();
     
             if (error) return res.status(500).json({ error: error.message });
