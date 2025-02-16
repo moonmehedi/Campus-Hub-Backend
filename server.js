@@ -1,45 +1,65 @@
 require("dotenv").config();
 
-
 const express = require("express");
 const supabase = require("./connection");
 const cors = require("cors");
 const multer = require("multer");
-
+const session = require('express-session');  // Add this
 
 const app = express();
 const PORT = 3000;
 
-app.use(cors());
+// Session configuration - Add this
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'your-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+}));
+
+app.use(cors({
+    origin: process.env.CLIENT_URL || 'http://localhost:3001',
+    credentials: true  // Important for cookies
+}));
 app.use(express.json());
+
 // Multer for handling file uploads (stores files in memory)
 const upload = multer({ storage: multer.memoryStorage() });
 
 //⚠️import routes from here
-const noticeRouter=require("./src/routes/notices")
-const messageRouter=require("./src/routes/messages")
+const authStudentRouter = require("./src/routes/auth_student");
+const authTeacherRouter = require("./src/routes/auth_teacher");   // Add this
+const noticeRouter = require("./src/routes/notices");
+const messageRouter = require("./src/routes/messages");
 const attendanceRouter = require("./src/routes/attendance");
-const memberRouter=require("./src/routes/members")
-//⬇️Assign routes to app from here
-app.use("/notices",noticeRouter);
-app.use('/messages',messageRouter);
-app.use("/attendance", attendanceRouter);
-app.use('/members',memberRouter);
-//Dummy Homepage to avoid frustration 😅 ===Arqam
-app.get("/",async(req,res)=>{
-    res.send("Welcome to CampusHub")
-})
-
-
-
-
-//⚠️import routes from here
+const memberRouter = require("./src/routes/members");
 const Router1 = require("./src/routes/courseadvisor");
-//⬇️Assign routes to app from here
-app.use("/courseadvisor",Router1);
 const Router2 = require("./src/routes/leave");
-//⬇️Assign routes to app from here
-app.use("/leave",Router2);
+const examRouter = require("./src/routes/exam");
+
+// Auth routes (no auth middleware needed)
+app.use("/auth_student", authStudentRouter);  // Add this first
+app.use("/auth_teacher", authTeacherRouter); 
+
+//⬇️Assign routes to app from here (with auth middleware)
+const { requireAuth } = require('./src/middleware/auth');  // Add this
+
+app.use("/notices", requireAuth, noticeRouter);
+app.use('/messages', requireAuth, messageRouter);
+app.use("/attendance", requireAuth, attendanceRouter);
+app.use('/members', requireAuth, memberRouter);
+app.use("/courseadvisor", requireAuth, Router1);
+app.use("/leave", requireAuth, Router2);
+app.use("/exams", requireAuth, examRouter);
+
+//Dummy Homepage to avoid frustration 😅
+app.get("/", async(req, res) => {
+    res.send("Welcome to CampusHub");
+});
 
 
 // ## dont move it
