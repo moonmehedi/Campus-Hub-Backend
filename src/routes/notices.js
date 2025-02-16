@@ -1,7 +1,7 @@
 const express=require('express')
 const router=express.Router()
 const supabase=require('../../connection')
-
+//
 router.get('/',async(req,res)=>{
     try {
         const{data,error}=await supabase.from("notices").select("*");
