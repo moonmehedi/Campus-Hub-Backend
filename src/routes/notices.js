@@ -1,12 +1,22 @@
 const express=require('express')
 const router=express.Router()
 const supabase=require('../../connection')
-
+//
 router.get('/',async(req,res)=>{
     try {
         const{data,error}=await supabase.from("notices").select("*");
         if (error) throw error
-        res.status(200).json(data)
+        const transformedData = data.map(item => {
+            if (item.created_at && item.updated_at) {
+                const originalTimestamp__create = new Date(item.created_at);
+                const formattedTimestamp__create = originalTimestamp__create.toISOString().replace('T', ' ').slice(0, 19);
+                const originalTimestamp__update = new Date(item.updated_at);
+                const formattedTimestamp__update = originalTimestamp__update.toISOString().replace('T', ' ').slice(0, 19);
+                return { ...item, created_at: formattedTimestamp__create, updated_at:formattedTimestamp__update }; 
+            }
+            return item;
+        });
+        res.status(200).json(transformedData);
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -19,7 +29,11 @@ router.post('/', async (req, res) => {
         try {
             const { data,error } = await supabase
                 .from('notices')
-                .insert({ teacher_id, title, content })
+                .insert({ teacher_id:teacher_id,
+                    content:content,
+                    title:title,
+                    type:type,
+                 })
                 .select();
     
             if (error) return res.status(500).json({ error: error.message });
