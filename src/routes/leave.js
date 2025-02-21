@@ -11,11 +11,12 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 router.get("/leave-requests", async (req, res) => {
     try {
+        console.log("talking............");
         const { data, error } = await supabase
             .from("leave")
             .select("*")
             .is("status", null);  // Filter for rows where status is NULL
-  
+        console.log(data);
         if (error) throw error;
   
         res.status(200).json({ success: true, data });
