@@ -33,6 +33,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 //⚠️import routes from here
 const authStudentRouter = require("./src/routes/auth_student");
 const authTeacherRouter = require("./src/routes/auth_teacher");   // Add this
+const authAdminRouter = require("./src/routes/auth_admin");   // Add this
 const noticeRouter = require("./src/routes/notices");
 const messageRouter = require("./src/routes/messages");
 const attendanceRouter = require("./src/routes/attendance");
@@ -44,6 +45,7 @@ const examRouter = require("./src/routes/exam");
 // Auth routes (no auth middleware needed)
 app.use("/auth_student", authStudentRouter);  // Add this first
 app.use("/auth_teacher", authTeacherRouter); 
+app.use("/auth_admin", authAdminRouter);  // Add this
 
 //⬇️Assign routes to app from here (with auth middleware)
 const { requireAuth } = require('./src/middleware/auth');  // Add this
@@ -90,7 +92,6 @@ app.get("/courses-to-exam/:student_id", async (req, res) => {
       res.status(500).json({ success: false, message: "Error fetching courses", error: err.message });
   }
 });
-
 
 
 
