@@ -4,14 +4,15 @@ const supabase=require('../../connection')
 
 
 
-router.get("/all-result/:student_id", async (req, res) => {
+router.get("/all-result/", async (req, res) => {
     const { student_id } = req.params;
     try {
+        console.log('the student id is',req.session.student.student_id)
         const { data, error } = await supabase
         //.from("completed_courses")
         .from("enrolled_courses")
         .select("course_code, grade, course:course_code(name, credit)") // Fetch related course details
-        .eq("student_id", student_id);
+        .eq("student_id", req.session.student.student_id);
         if (error) throw error;
         res.status(200).json({ success: true, data });
     } catch (err) {
@@ -19,13 +20,15 @@ router.get("/all-result/:student_id", async (req, res) => {
         res.status(500).json({ success: false, message: "Error fetching courses", error: err.message });
     }
   });
-router.get("/courses-to-improve/:student_id", async (req, res) => {
+router.get("/courses-to-improve/", async (req, res) => {
     const { student_id } = req.params;
+    console.log('the student id is',req.session.student.student_id)
     try {
+       
         const { data, error } = await supabase
             .from("enrolled_courses")
             .select("course_code, grade, course:course_code(name, credit)") // Fetch related course details
-            .eq("student_id", student_id)
+            .eq("student_id", req.session.student.student_id)
             .lt("grade", 3.25)
             .order("grade", { ascending: true });
   

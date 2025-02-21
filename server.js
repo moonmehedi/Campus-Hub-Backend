@@ -65,13 +65,13 @@ app.get("/", async(req, res) => {
 
 
 // ## dont move it
-app.get("/courses-to-exam/:student_id", async (req, res) => {
+app.get("/courses-to-exam", async (req, res) => {
   const { student_id } = req.params;
   try {
       const { data, error } = await supabase
           .from("enrolled_courses")
           .select("course_code, grade, course:course_code(name, credit)") // Fetch related course details
-          .eq("student_id", student_id)
+          .eq("student_id", req.session.student.student_id)
           .lt("grade", 3.25)
           .order("grade", { ascending: true })
           .limit(3);
