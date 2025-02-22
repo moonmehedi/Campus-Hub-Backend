@@ -15,7 +15,8 @@ const supabase = require("../../connection");
 router.get("/", async (req, res) => {
   const { data, error } = await supabase
     .from("student")
-    .select("student_id,name,isActive");
+    .select("student_id,name,avatar,isActive")
+    .order('avatar', { ascending: false, nullsFirst: false });;
   if (error) {
     res.status(500).json({ error: error.message });
   } else {
@@ -33,11 +34,12 @@ router.get("/", async (req, res) => {
 //   }
 router.get("/:id", async (req, res) => {
   const studentId = parseInt(req.params.id, 10);
+  console.log(`Student Id feteched:${studentId}`)
   if (isNaN(studentId)) {
     // Check if conversion failed
     return res
       .status(400)
-      .json({ error: "Invalid student ID. Must be an integer." });
+      .json({ error: "Invalid student ID. Must be an integer. from backend" });
   }
   const { data, error } = await supabase
     .from("student")
