@@ -25,6 +25,7 @@ router.post('/', async (req, res) => {
     const { admin_id,teacher_id, title, content,type } = req.body;
     if (!admin_id)
     {
+        console.log(req.body)
         console.log(`Add Notice Teacher id:${teacher_id} Title:${title} content:${content} type:${type}`)
         try {
             const { data,error } = await supabase

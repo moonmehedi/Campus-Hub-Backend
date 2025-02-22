@@ -24,7 +24,7 @@ router.post('/', async (req, res) => {
                 timestamp
             });
         }
-
+        console.log(teacher);
         // Direct password comparison (since it's stored as plain text)
         if (password !== teacher.password) {
             return res.status(401).json({ 
@@ -63,16 +63,42 @@ router.post('/', async (req, res) => {
 });
 
 // Status check route
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
     const timestamp = getCurrentTimestamp(); 
 
     if (req.session.teacher) {
-        res.json({
-            isAuthenticated: true,
-            teacher_id: req.session.teacher.teacher_id,
-            name: req.session.teacher.name,
-            timestamp
-        });
+        try {
+            const { teacher_id } = req.session.teacher;
+
+            // Query teacher details from database
+            const { data: teacher, error } = await supabase
+                .from('teacher')
+                .select('*')
+                .eq('teacher_id', teacher_id)
+                .single();
+
+            if (error || !teacher) {
+                return res.status(500).json({ 
+                    success: false, 
+                    message: 'Failed to retrieve teacher details',
+                    timestamp
+                });
+            }
+            console.log(teacher);
+
+            res.json({
+                isAuthenticated: true,
+                teacher,
+                timestamp
+            });
+        } catch (error) {
+            console.error(`[${timestamp}] Status check error:`, error);
+            res.status(500).json({ 
+                success: false, 
+                message: 'Internal server error',
+                timestamp
+            });
+        }
     } else {
         res.json({
             isAuthenticated: false,
@@ -82,7 +108,7 @@ router.get('/', (req, res) => {
 });
 
 // Logout route
-router.post('/', (req, res) => {
+router.post('/logout', (req, res) => {
     const timestamp = getCurrentTimestamp(); 
     
     if (!req.session.teacher) {

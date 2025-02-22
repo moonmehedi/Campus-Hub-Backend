@@ -67,16 +67,42 @@ router.post('/', async (req, res) => {
 });
 
 // Status check route
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
     const timestamp = getCurrentTimestamp(); 
 
     if (req.session.admin) {
-        res.json({
-            isAuthenticated: true,
-            email: req.session.admin.email,
-            name: req.session.admin.name,
-            timestamp
-        });
+        try {
+            const { email } = req.session.admin;
+
+            // Query admin details from database
+            const { data: admin, error } = await supabase
+                .from('admin')
+                .select('*')
+                .eq('email', email)
+                .single();
+
+            if (error || !admin) {
+                return res.status(500).json({ 
+                    success: false, 
+                    message: 'Failed to retrieve admin details',
+                    timestamp
+                });
+            }
+            console.log(admin);
+
+            res.json({
+                isAuthenticated: true,
+                admin,
+                timestamp
+            });
+        } catch (error) {
+            console.error(`[${timestamp}] Status check error:`, error);
+            res.status(500).json({ 
+                success: false, 
+                message: 'Internal server error',
+                timestamp
+            });
+        }
     } else {
         res.json({
             isAuthenticated: false,
