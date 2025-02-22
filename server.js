@@ -56,7 +56,7 @@ app.use("/attendance", requireAuth, attendanceRouter);
 app.use('/members', requireAuth, memberRouter);
 app.use("/courseadvisor", requireAuth, Router1);
 app.use("/leave", requireAuth, Router2);
-app.use("/exams", requireAuth, examRouter);
+app.use("/exam", requireAuth, examRouter);
 
 //Dummy Homepage to avoid frustration 😅
 app.get("/", async(req, res) => {
