@@ -1,6 +1,8 @@
 const express = require("express");
 const supabase = require("../../connection"); // Import Supabase connection
 const router = express.Router();
+const { getCurrentTimestamp } = require('../utils/timestamp');
+
 
 // Helper function to format attendance data
 function make_attendance_table(data) {
@@ -193,5 +195,64 @@ function get_date_and_period(date) {
         formattedDate: parts.slice(1).join("-")
     };
 }
+
+
+
+
+
+
+
+
+// Fetch courses for the teacher
+router.get("/teacher/courses", async (req, res) => {
+  const timestamp = getCurrentTimestamp();
+
+  try {
+    const teacherId = req.session.teacher.teacher_id; // Assuming teacherId is stored in session
+    console.log(`[${timestamp}] Fetching courses for teacher ID: ${teacherId}`);
+    if (!teacherId) {
+      return res.status(401).json({
+        success: false,
+        message: "Not logged in",
+        timestamp,
+      });
+    }
+
+    // Fetch courses for the teacher
+    const { data: courses, error } = await supabase
+      .from("teacher_courses")
+      .select("course:course_code (code:course_code, name, credit, type:Course_type)")
+      .eq("teacher_id", teacherId);
+    console.log(courses)
+    if (error) {
+      throw error;
+    }
+
+    res.json({
+      success: true,
+      courses: courses.map(course => course.course),
+      timestamp,
+    });
+  } catch (error) {
+    console.error(`[${timestamp}] Error fetching courses:`, error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      timestamp,
+    });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
 
 module.exports = router;

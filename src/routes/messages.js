@@ -27,10 +27,12 @@ router.get("/", async (req, res) => {
 });
 router.post("/", async (req, res) => {
   const { content, student_id } = req.body;
+  console.log(`Message Recived from frontend:${content} with studentId:${student_id} as ${typeof student_id}`)
   try {
     const formattedTimestamp = new Date().toISOString()
       .replace("T", " ")
       .slice(0, 19);
+      console.log(`Content:${content} StudentId:${student_id}`)
     const { data, error } = await supabase.from("messages").insert({
       content: content,
       student_id: student_id,
